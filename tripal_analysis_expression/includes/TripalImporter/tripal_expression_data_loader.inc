@@ -1,6 +1,6 @@
 <?php
 
-class tripal_expression_data_loader extends TripalImporter{
+class tripal_expression_data_loader extends TripalImporter {
 
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
@@ -287,6 +287,63 @@ class tripal_expression_data_loader extends TripalImporter{
       '#suffix' => $lt_message,
     ];
 
+    $form['experimental_design']['assay_details'] = [
+      '#title' => t('Assay Details'),
+      '#type' => 'fieldset',
+      '#description' => t('Describe the details of the assay process. The assay is the physical instance of the array')
+        . t(' used in the experiment.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#weight' => 1,
+    ];
+
+
+    $form['experimental_design']['assay_details']['assaydate'] = [
+      '#type' => 'date',
+      '#title' => t('Date Assay Run'),
+      '#description' => t('If no date is provided, then the current date will be used.'),
+      '#required' => TRUE,
+      '#default_value' => [
+        'year' => $year,
+        'month' => $month,
+        'day' => $day,
+      ],
+    ];
+    //
+    $form['experimental_design']['assay_details']['assay_description'] = [
+      '#type' => 'textfield',
+      '#title' => t('Assay Description'),
+      '#description' => t('A description of the assay used.'),
+    ];
+
+    $lt_message = tripal_set_message(t('If the assay operator is not present in the dropdown list.  If an assay operator is not selected, then a generic assay operator will be created for this analysis.'),
+      TRIPAL_INFO, array('return_html' => TRUE)
+    );
+
+        $form['experimental_design']['assay_details']['assay_operator_id'] = array(
+          '#title' => t('Assay Operator'),
+          '#type' => 'select',
+          '#empty_value' => '',
+          '#description' => t('The assay operator.'),
+          '#options' => $form['choose_contact']['#value'],
+          '#suffix' => $lt_message,
+        );
+
+        $lt_message = tripal_set_message(t('If the assay protocol is not present in the dropdown list, ')
+          . l(t('add a new protocol.'), 'bio_data/add') . t(' An assay protocol is not required.'),
+          TRIPAL_INFO, array('return_html' => TRUE)
+        );
+
+        $assays = tripal_get_protocol_select_options(TRUE, 'Assay Protocol');
+
+        $form['experimental_design']['assay_details']['assay_protocol_id'] = array(
+          '#title' => t('Assay Protocol'),
+          '#type' => 'select',
+          '#description' => t('The protocol associated with this assay.'),
+          '#options' => $assays,
+          '#suffix' => $lt_message,
+        );
+
     $form['filetype'] = [
       '#type' => 'radios',
       '#title' => t('Source File Type'),
@@ -375,52 +432,17 @@ class tripal_expression_data_loader extends TripalImporter{
     $quantificationunits = $arguments['quantificationunits'];
 
     //missing
-    $assaydate = '';//$arguments['assaydate'];
+    $assaydate = $arguments['assaydate'];
     $contact_id = '';//$arguments['contact_id'];
-    //
-    //$record = ['table' => 'analysis', 'id' => $node->analysis_id];
-    //
-    ////insert properties
-    ////note this is a subset of properties from the original, and im also not sure that we still need it
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_filetype',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->filetype),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_submit_job',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->submit_job),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_fileext',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->fileext),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_filepath',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->filepath),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_re_start',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->re_start),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_re_end',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->re_end),
-    //]);
-    //chado_insert_property($record, [
-    //  'type_name' => 'analysis_expression_feature_uniquenames',
-    //  'cv_name' => 'tripal',
-    //  'value' => trim($node->feature_uniquenames),
-    //]);
+
 
 
     tripal_set_message(t("Job Submitted!  If new Biosamples will be created in this job, remember to") . l('publish them after the job runs.',
         'admin/content/bio_data/publish/'), 'status');
+
+
+    //TODO
+    //If quantification, acquisition, or  assays are provided, create them FIRST here.
 
 
     $this->tripal_expression_loader($organism_id, $analysis_id, $contact_id, $arraydesign_id, $assaydate, $acquisitiondate, $quantificationdate, $quantificationunits, $filepath, $fileext, $filetype, $re_start, $re_stop, $feature_uniquenames, $create_biosamples);
@@ -969,7 +991,6 @@ class tripal_expression_data_loader extends TripalImporter{
         $data_ln = 0;
       }
       if ($data_ln == 1 or !$re_start) {
-        //print "this is the line >>> $line <<<";
         $inter++;
         if ($inter % $int_length == 0) {
           $percent = sprintf("%.2f", ($inter / $num_features) * 100);

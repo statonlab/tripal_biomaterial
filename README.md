@@ -200,9 +200,8 @@ This represents the quantification technique. In the case of a microarray, it is
  * **Quantification Operator** - The person or organization that ran the quantification.
  * **Quantification Protocol** - The quantification protocol used in the experiment. (See protocol description below).
 
-![Experimental Design Fields](https://cloud.githubusercontent.com/assets/14822959/12991557/a4b0228e-d0dd-11e5-93de-2f206be6d5fe.png)
-![Data Loader Fields](https://cloud.githubusercontent.com/assets/14822959/12991553/a4ade58c-d0dd-11e5-97d2-1096d78bb189.png)
-
+>![The experimental design section]()
+> Expand the experimental design tab to fill in arraydesign, acquisition, and quantification details.
 
 # Protocols
 
