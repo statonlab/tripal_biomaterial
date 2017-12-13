@@ -393,6 +393,8 @@ class tripal_expression_data_loader extends TripalImporter {
 
   public function formValidate($form, &$form_state) {
 
+    dpm($form_state);
+
     $filetype = $form_state['values']['filetype'];
     $fileext = $form_state['values']['fileext'];
     $re_start = $form_state['values']['re_start'];

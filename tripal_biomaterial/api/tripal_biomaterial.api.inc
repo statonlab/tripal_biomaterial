@@ -255,12 +255,6 @@ function expression_create_biomaterial_structure(
   $assay_id = $assay_id ? $assay_id : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
   $acquisition_id = $acquistion_id ? $acquisition_id : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
   $quantification_id = $quantification_id ? $quantification_id : create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id, $uniq_name);
-  //$assay_id         = $assay_id          ? create_unique_assay($assay_id, $contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id)
-  // : create_generic_assay($contact_id, $arraydesign_id, $biomaterial_id, $organism_id, $analysis_id);
-  //$acquisition_id   = $acquisition_id    ? create_unique_acquisition($acquisition_id, $assay_id, $biomaterial_id, $organism_id, $analysis_id)
-  //  : create_generic_acquisition($assay_id, $biomaterial_id, $organism_id, $analysis_id);
-  // $quantification_id = $quantification_id ? create_unique_quantification($quantification_id, $acquisition_id, $biomaterial_id, $organism_id, $analysis_id)
-  // : create_generic_quantification($acquisition_id, $biomaterial_id, $organism_id, $analysis_id);
 
   // Create a generic channel. A channel_id is necessary for the assay_biomaterial table.
   $channel_id = create_generic_channel();
@@ -408,47 +402,6 @@ function create_generic_arraydesign($contact_id) {
   return $arraydesign_id;
 }
 
-function create_unique_arraydesign(
-  $arraydesign_id,
-  $organism_id,
-  $analysis_id
-) {
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $organism_s = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', [':organism_id' => $organism_id])->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', [':analysis_id' => $analysis_id])->fetchField();
-
-  // Grab every field except the foreign key.
-  $columns = [
-    'name',
-    'version',
-    'description',
-    'array_dimensions',
-    'element_dimensions',
-    'num_of_elements',
-    'num_array_columns',
-    'num_array_rows',
-    'num_grid_columns',
-    'num_grid_rows',
-    'num_sub_columns',
-    'num_sub_rows',
-    'manufacturer_id',
-    'platformtype_id',
-    'platformtype_id',
-    'dbxref_id',
-    'dbxref_id',
-  ];
-
-  $select_values = ['arraydesign_id' => $arraydesign_id];
-  $values = chado_select_record('arraydesign', $columns, $select_values);
-  $values = (array) $values;
-
-  // Update the name field to create a unique record.
-  $values['name'] = $values['name'] . ' - Expression analysis: ' . $analysis . ' of organism: ' . $organism_g . ' ' . $organism_s;
-
-  $arraydesign = chado_insert_record('arraydesign', $values);
-  $arraydesign_id = $arraydesign['arraydesign_id'];
-  return $arraydesign_id;
-}
 
 function create_unique_assay(
   $assay_id,
@@ -599,20 +552,14 @@ function create_generic_assay(
   $analysis_id,
   $uniq_name
 ) {
-  /*$biomaterial = chado_query('SELECT name FROM {biomaterial} WHERE biomaterial_id = :biomaterial_id', array(':biomaterial_id' => $biomaterial_id))->fetchField();
-  $organism_g = chado_query('SELECT genus FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
-  $organism_s  = chado_query('SELECT species FROM {organism} WHERE organism_id = :organism_id', array(':organism_id' => $organism_id))->fetchField();
-  $analysis = chado_query('SELECT name FROM {analysis} WHERE analysis_id = :analysis_id', array(':analysis_id' => $analysis_id))->fetchField(); */
+
   $assay_id = chado_query('select assay_id from {assay} where name = :name limit 1', [':name' => $uniq_name])->fetchField();
-  //$assay_id = chado_query('select assay_id from {assay} where name = :name limit 1',array(':name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis))->fetchField();
+
   if (!$assay_id) {
     $values = [
       'name' => $uniq_name,
-      //'name' => $biomaterial . ' - ' . $organism_g . " " . $organism_s . ' - ' . $analysis,
-      //'description' => 'This is a generic assay created for the biomaterial: '. $biomaterial . '. The biomaterial was taken from the organism: ' . $organism_g . ' ' . $organism_s . '. This assay is part of the analysis: ' . $analysis,
       'arraydesign_id' => $arraydesign_id,
       'operator_id' => $contact_id,
-      ####****
     ];
     $assay = chado_insert_record('assay', $values);
     if ($assay == FALSE) {

@@ -129,7 +129,6 @@ class data__gene_expression_data extends ChadoField {
       return $entity;
     }
 
-
     if ($entity->chado_table === "feature") {
 
       // ChadoFields automatically load the chado column specified in the

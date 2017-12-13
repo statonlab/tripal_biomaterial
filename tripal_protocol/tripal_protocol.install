@@ -63,10 +63,10 @@ function tripal_protocol_add_cvs() {
   // CVs for the array design content type.
   tripal_insert_cv('arraydesign_property', 'Contains property terms for arraydesigns.');
 
-// Let's not do this.
+  // Let's not do this.
 
-//  tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
-//  tripal_insert_cv('arraydesign_substratetype', 'Contains microarray substrate types.');
+  //  tripal_insert_cv('arraydesign_platformtype', 'Contains microarray platform types.');
+  //  tripal_insert_cv('arraydesign_substratetype', 'Contains microarray substrate types.');
 
   // CVs for the protocol content type.
   tripal_insert_cv('protocol_type', 'Contains protocol type.');
@@ -573,6 +573,74 @@ function tripal_protocol_add_cvterms_entity_for_array_design() {
       throw new Exception($error['!message']);
     }
   }
+
+}
+
+/**
+ * TODO  : THIS IS NOT IMPLEMENTED YET!
+ *  Right now we create a generic EVERYTHING for every instance.
+ * I think instead we should create single generics on install and utilize them
+ * when importing biosamples instead.
+ *
+ */
+
+function tripal_protocol_create_generics() {
+
+  $values = [];
+  //generic manufacturer
+  $contact = chado_insert_record('contact', $values);
+  $contact_id = $contact['contact_id'];
+
+
+  $platformtype_cvterm = 1;
+
+  //Arraydesign
+  $values = [
+    'manufacturer_id' => $contact_id,
+    'platformtype_id' => $platformtype_cvterm,
+    'name' => 'generic array design',
+    'description' => 'generic array design created by the tripal protocol module',
+  ];
+  $array_design = chado_insert_record('arraydesign', $values);
+  if (!$array_design) {
+    print "ERROR: Unable to write to array design table";
+  }
+  $array_design_id = $array_design['assay_id'];
+
+  //Assay
+
+  $values = [
+    'name' => "generic assay",
+    'description' => 'generic assay created by the tripal protocol module',
+    'arraydesign_id' => $array_design_id,
+    'operator_id' => $contact_id,
+  ];
+  $assay = chado_insert_record('assay', $values);
+  if ($assay == FALSE) {
+    print "ERROR: Unable to write to assay table\n";
+  }
+  $assay_id = $assay['assay_id'];
+
+  //Acquisition
+
+  $values = [
+    'assay_id' => $assay_id,
+    'name' => 'generic acquisition',
+  ];
+
+  $acquisition = chado_insert_record('assay', $values);
+  if (!$acquisition) {
+    print "ERROR: Unable to write to acquisition table\n";
+  }
+  $acquisition_id = $acquisition['acquisition_id'];
+
+  //Quantification
+
+  $values = ['acquisition_id' => $acquisition_id];
+
+  //Protocol
+
+  $values = [];
 
 }
 
