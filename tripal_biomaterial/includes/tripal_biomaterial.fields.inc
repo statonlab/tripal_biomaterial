@@ -59,7 +59,30 @@ function tripal_biomaterial_bundle_fields_info($entity_type, $bundle) {
     ];
   }
 
-  return $fields;
+if (isset($bundle->data_table) AND ($bundle->data_table == 'biomaterial')){
+  tripal_insert_cvterm(array(
+    'id' => 'SIO:001172',
+    'name' => 'primary_cross-reference',
+    'cv_name' => 'SIO',
+    'definition' => 'An exact cross-reference is a database cross-reference in which one entity is equivalent to the other based on all the entitie\'s attributes (minus the source).',
+  ));
+
+  // Then describe the field defined by that term.
+  $field_name = 'sio__primary_cross_reference';
+  $field_type = 'sio__primary_cross_reference';
+  $fields[$field_name] = array(
+    'field_name' => $field_name,
+    'type' => $field_type,
+    'cardinality' => 1,
+    'locked' => FALSE,
+    'storage' => array(
+      'type' => 'field_chado_storage',
+    ),
+  );
+}
+
+
+return $fields;
 }
 
 /**
@@ -119,5 +142,38 @@ function tripal_biomaterial_bundle_instances_info($entity_type, $bundle) {
       ],
     ];
   }
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'biomaterial')) {
+    $field_name = 'sio__primary_cross_reference';
+    $field_type = 'sio__primary_cross_reference';
+    $instances[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'primary cross reference',
+      'description' => 'The primary cross reference is a database cross reference in which one entity is equivalent to the other and it serves as the primary reference.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => $bundle->data_table,
+        'chado_column' => 'organism_id',
+        'base_table' => $bundle->data_table,
+      ),
+      'widget' => array(
+        'type' => 'sio__primary_cross_reference_widget',
+        'settings' => array(),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'sio__primary_cross_reference_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+  }
+
+
   return $instances;
 }
