@@ -12,7 +12,7 @@ before_script:
   - docker pull statonlab/tripal3
 
 script:
-  - docker run -it -d --rm --name tripal -v "$(pwd)":/modules/tripal_analysis_expression statonlab/tripal3
+  - docker run -it -d --rm --name tripal -v "$(pwd)":/modules/custom/tripal_analysis_expression statonlab/tripal3
   - sleep 30 #We pause here so drush won't fail
   - docker exec -it tripal drush pm-enable -y tripal_analysis_expression
-  - docker exec -it tripal bash -c 'cd /modules/tripal_analysis_expression/ && composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
+  - docker exec -it tripal bash -c 'cd /modules/custom/tripal_analysis_expression/ && composer install && DRUPAL_ROOT="/var/www/html" ./vendor/bin/phpunit'
