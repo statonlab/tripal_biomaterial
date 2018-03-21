@@ -1,0 +1,5 @@
+{
+    "require": {
+        "statonlab/tripal-test-suite": "0.0.7"
+    }
+}
