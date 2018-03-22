@@ -1,0 +1,13 @@
+{
+    "name": "almsaeed/tests",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Abdullah Almsaeed",
+            "email": "almasaeed2010@gmail.com"
+        }
+    ],
+    "require": {
+      "statonlab/tripal-test-suite": "master-dev"
+    }
+}
