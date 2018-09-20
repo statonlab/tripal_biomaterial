@@ -2,6 +2,7 @@
 
 /**
  * Class tripal_expression_data_loader
+ *
  * @see TripalImporter
  */
 
@@ -10,7 +11,6 @@ class tripal_expression_data_loader extends TripalImporter {
   public static $name = 'Chado Expression Data Loader';
 
   public static $machine_name = 'Chado_Expression_Data_Loader';
-
 
   public static $description = 'Import expression data.  Requires an analaysis and biomaterial.';
 
@@ -25,6 +25,7 @@ class tripal_expression_data_loader extends TripalImporter {
   public static $require_analysis = TRUE;
 
   public static $button_text = 'Import expression data';
+
   public static $methods = [
     'file_upload' => TRUE,
     'file_local' => TRUE,
@@ -65,8 +66,6 @@ class tripal_expression_data_loader extends TripalImporter {
       '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the expression file (e.g. gene, mRNA, polypeptide, etc...).  Only necessary if the uniquename does not uniquely identify the feature for this organism.'),
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
     ];
-
-
     //protocols, assays, etc go here
 
     $form['experimental_design'] = [
@@ -459,14 +458,17 @@ class tripal_expression_data_loader extends TripalImporter {
 
     $uniq_name = $this->get_unique_name($organism_id, $analysis_id);
 
-    try {
       // Create the array design.
       $arraydesign_id = $arraydesign_id ? $arraydesign_id : create_generic_arraydesign(create_generic_contact());
       $re_ext = '/^.+\.(' . $fileext . ')/';
 
       // A matrix file.
       if ($filetype == 'mat' and is_file($filepath)) {
-        $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames, $seqtype_id);
+      $result =   $this->tripal_expression_load_mat_file($filepath, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $quantificationunits, $re_start, $re_stop, $uniq_name, $feature_uniquenames, $seqtype_id);
+
+      if (!$result){
+        return;
+      }
       }
 
       // The column format.
@@ -482,7 +484,6 @@ class tripal_expression_data_loader extends TripalImporter {
         // Load all files with of type $fileext in the directory.
         while ($file = readdir($dir_handle)) {
           if (preg_match('/(.+)\.' . $fileext . '$/', $file)) {
-            print "File " . ($num_file + 1) . " of $total_files: $file                                       \n";
             $new_features = $this->tripal_expression_load_col_file($filepath . '/' . $file, $fileext, $arraydesign_id, $organism_id, $analysis_id, $contact_id, $assay_id, $acquisition_id, $quantification_id, $re_start, $re_stop, $uniq_name, $feature_uniquenames);
             $num_file++;
             $old_features = $features;
@@ -493,9 +494,6 @@ class tripal_expression_data_loader extends TripalImporter {
 
       // Associate features with an analysis.
       foreach ($features as $feature_id) {
-
-        //TODO: THIS WENT IN THE WRONG PLACE I THINK
-
         if ($seqtype_id) {
 
           $query = chado_query('SELECT afanalysisfeature_id FROM {analysisfeature} af 
@@ -527,12 +525,6 @@ AND f.type_id = :type_id', [
           }
         }
       }
-    } catch (Exception $e) {
-      print "\n";
-      watchdog_exception('T_expression_load', $e);
-      print "FAILED: Rolling back database changes...\n";
-    }
-    print "\nDone.\n";
 
     return;
   }
@@ -545,7 +537,6 @@ AND f.type_id = :type_id', [
     $uniq_string .= " for ";
     $sql = "SELECT name FROM {analysis} WHERE analysis_id = :analysis_id";
     $uniq_string .= chado_query($sql, [':analysis_id' => $analysis_id])->fetchField();
-    print $uniq_string;
     return $uniq_string;
   }
 
@@ -656,18 +647,19 @@ AND f.type_id = :type_id', [
     }
 
     if ($num_lines < 2) {
-      print "Error reading file.\n Please ensure that your file is readable and try again.";
-      return;
+      $this->logMessage("Error reading file.\n Please ensure that your file is readable and try again.", [], TRIPAL_ERROR);
+      return FALSE;
     }
 
     // Make sure there not duplicate feature names.
     if (count($feature_repeats = array_diff_assoc($feature_array, array_unique($feature_array))) > 0) {
-      print "ERROR: There are multiple instance of the following feature(s) in the expression file:\n";
+      $message =  "ERROR: There are multiple instance of the following feature(s) in the expression file:\n";
       foreach ($feature_repeats as $repeat) {
-        print "  " . $repeat . "\n";
+        $message .= $repeat . "\n";
       }
-      print "Please make sure there is only one instance of each feature in the expression file\n";
-      return;
+      $this->logMessage($message, [], TRIPAL_ERROR);
+
+      return FALSE;
     }
 
     // Get rid of the feature_array.
@@ -1022,7 +1014,6 @@ AND f.type_id = :type_id', [
    *  The name of the feature to be found.
    *
    * @param $organism_id
-   * The organism to find it in
    *
    * @param $feature_uniquenames
    *
@@ -1060,7 +1051,7 @@ AND f.type_id = :type_id', [
       //TODO:  This print is redundant with logMessage, but Test Suite needs help dealing with logMessage outside of a job- see
       //https://github.com/statonlab/TripalTestSuite/issues/116
       print "ERROR: More than one feature matches the feature name.\n";
-      $message ="ERROR: More than one feature matches the feature name: !feature.\n
+      $message = "ERROR: More than one feature matches the feature name: !feature.\n
       Please specify a term for the feature type.\n";
       $this->logMessage($message, ['!feature' => $feature], TRIPAL_ERROR);
       return FALSE;
