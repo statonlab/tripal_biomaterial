@@ -119,7 +119,3 @@ Biosamples may also be loaded one at a time. As an administer or a user with per
 ### Biomaterial Loader
 1. Flat files: [CSV file](example_files/exampleCSV.csv), [TSV file](example_files/exampleTSV.tsv)
 2. [XML file](example_files/sm125.xml)
-
-### Expression Data Loader
-1. [Column file](example_files/exampleExpressionData.rpkm)
-2. [Matrix file](example_files/exampleMatrix.tsv)
