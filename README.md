@@ -9,8 +9,7 @@ Please note this module requires **Tripal 3** or greater.  The [Tripal 2 functio
 1. [Introduction](#introduction)
 2. [Installation](#installation)
 3. [Loading Biosamples](#loading-biosamples)
-4. [Viewing Data](#viewing-and-downloading-data)
-5. [Example Files](#example-files)
+4. [Example Files](#example-files)
 
 # Introduction 
 Tripal Biomaterial is a [Drupal](https://www.drupal.org/) module built to extend the functionality of the [Tripal](http://tripal.info/) toolset.
